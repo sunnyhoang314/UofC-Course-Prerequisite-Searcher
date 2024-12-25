@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Prerequisites</title>
+    <script>
+        // Fetch subjects and populate the dropdown
+        async function fetchSubjects() {
+            const response = await fetch("/subject-codes");
+            const data = await response.json();
+
+            const subjectDropdown = document.getElementById("subjectDropdown");
+            Object.keys(data).forEach(subject => {
+                const option = document.createElement("option");
+                option.value = data[subject]; // Subject URL
+                option.textContent = subject;
+                subjectDropdown.appendChild(option);
+            });
+        }
+
+        // Fetch courses when a subject is selected
+        async function fetchCourses() {
+            const subjectUrl = document.getElementById("subjectDropdown").value;
+            const response = await fetch(`/courses?url=${encodeURIComponent(subjectUrl)}`);
+            const data = await response.json();
+
+            const courseDropdown = document.getElementById("courseDropdown");
+            courseDropdown.innerHTML = '<option value="" disabled selected>Select a course number</option>'; // Clear old options
+
+            if (response.ok) {
+                data.forEach(course => {
+                    const option = document.createElement("option");
+                    option.value = course.url; // Full course URL
+                    option.textContent = `${course.name} ${course.number}`;
+                    courseDropdown.appendChild(option);
+                });
+            } else {
+                alert(data.error || "No courses found.");
+            }
+        }
+
+        // Initialize subject dropdown on page load
+        window.onload = fetchSubjects;
+    </script>
+</head>
+<body>
+    <h1>Course Prerequisites</h1>
+
+    <label for="subjectDropdown">Select Course Code:</label>
+    <select id="subjectDropdown" onchange="fetchCourses()">
+        <option value="" disabled selected>Select a course code</option>
+    </select>
+
+    <br><br>
+
+    <label for="courseDropdown">Select Course Number:</label>
+    <select id="courseDropdown">
+        <option value="" disabled selected>Select a course number</option>
+    </select>
+</body>
+</html>
