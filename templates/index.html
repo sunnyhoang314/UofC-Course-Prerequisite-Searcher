@@ -26,7 +26,7 @@
             const data = await response.json();
 
             const courseDropdown = document.getElementById("courseDropdown");
-            courseDropdown.innerHTML = '<option value="" disabled selected>Select a course number</option>'; // Clear old options
+            courseDropdown.innerHTML = '<option value="" disabled selected>Select a course</option>'; // Clear old options
 
             if (response.ok) {
                 data.forEach(course => {
@@ -36,7 +36,7 @@
                     courseDropdown.appendChild(option);
                 });
             } else {
-                alert(data.error || "No courses found.");
+                alert(data.error);
             }
         }
 
