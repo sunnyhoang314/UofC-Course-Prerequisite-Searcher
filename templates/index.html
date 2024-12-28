@@ -40,6 +40,30 @@
             }
         }
 
+        // Fetch courses that list the selected course as a prerequisite
+        async function fetchPrerequisiteForCourses() {
+            const courseDropdown = document.getElementById("courseDropdown");
+            const selectedOption = courseDropdown.options[courseDropdown.selectedIndex];
+            const courseUrl = selectedOption.value;
+            const courseNumber = selectedOption.text.split(" ").pop(); // Extract course number
+
+            const response = await fetch(`/courses-with-prerequisite?url=${encodeURIComponent(courseUrl)}&number=${courseNumber}`);
+            const data = await response.json();
+
+            const resultList = document.getElementById("prerequisiteForList");
+            resultList.innerHTML = ""; // Clear previous results
+
+            if (response.ok && data.courses) {
+                data.courses.forEach(course => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = `${course.name} ${course.number}`;
+                    resultList.appendChild(listItem);
+                });
+            } else {
+                resultList.innerHTML = `<li>${data.error || "No courses found that list this as a prerequisite."}</li>`;
+            }
+        }
+
         // Initialize subject dropdown on page load
         window.onload = fetchSubjects;
     </script>
@@ -55,8 +79,11 @@
     <br><br>
 
     <label for="courseDropdown">Select Course Number:</label>
-    <select id="courseDropdown">
+    <select id="courseDropdown" onchange="fetchPrerequisiteForCourses()">
         <option value="" disabled selected>Select a course number</option>
     </select>
+
+    <h3>Courses That List This as a Prerequisite:</h3>
+    <ul id="prerequisiteForList"></ul>
 </body>
 </html>

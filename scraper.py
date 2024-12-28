@@ -58,3 +58,29 @@ def get_courses_for_subject(subject_url):
             })
 
     return courses
+
+def get_courses_with_prerequisite(subject_url, target_course_number):
+    response = requests.get(subject_url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch data from {subject_url}. Status code: {response.status_code}")
+
+    soup = BeautifulSoup(response.content, "html.parser")
+    courses_with_prerequisite = []
+
+    # Find all prerequisite spans
+    prereq_sections = soup.find_all("span", class_="course-prereq")
+
+    for prereq_section in prereq_sections:
+        # Check if the target course number is mentioned in the prerequisites
+        if target_course_number in prereq_section.text:
+            # Find the associated course name and number
+            course_name_span = prereq_section.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCourse'))
+            course_number_span = prereq_section.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCode'))
+
+            if course_name_span and course_number_span:
+                courses_with_prerequisite.append({
+                    "name": course_name_span.text.strip(),
+                    "number": course_number_span.text.strip()
+                })
+
+    return courses_with_prerequisite
