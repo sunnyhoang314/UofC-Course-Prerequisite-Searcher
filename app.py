@@ -31,8 +31,8 @@ def fetch_courses():
 
 @app.route("/all-courses-with-prerequisite", methods=["GET"])
 def fetch_all_courses_with_prerequisite():
-    course_name = request.args.get("name")  # Course name (e.g., "Computer Science")
-    course_number = request.args.get("number")  # Course number (e.g., "331")
+    course_name = request.args.get("name")
+    course_number = request.args.get("number")
 
     if not course_name or not course_number:
         return jsonify({"error": "Both course name and number are required"}), 400

@@ -1,0 +1,46 @@
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    line-height: 1.6;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+p {
+    margin-bottom: 20px;
+    color: #555;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+select {
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.loading {
+    display: none;
+    margin: 20px 0;
+}
+
+.prerequisite-item {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.prereq-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
