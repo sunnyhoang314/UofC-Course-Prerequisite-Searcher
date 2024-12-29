@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Course Prerequisites</title>
+    <style>
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .prerequisite-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .prereq-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
     <script>
         // Fetch subjects and populate the dropdown
         async function fetchSubjects() {
@@ -13,7 +30,7 @@
             const subjectDropdown = document.getElementById("subjectDropdown");
             Object.keys(data).forEach(subject => {
                 const option = document.createElement("option");
-                option.value = data[subject]; // Subject URL
+                option.value = data[subject];
                 option.textContent = subject;
                 subjectDropdown.appendChild(option);
             });
@@ -26,12 +43,12 @@
             const data = await response.json();
 
             const courseDropdown = document.getElementById("courseDropdown");
-            courseDropdown.innerHTML = '<option value="" disabled selected>Select a course</option>'; // Clear old options
+            courseDropdown.innerHTML = '<option value="" disabled selected>Select a course</option>';
 
             if (response.ok) {
                 data.forEach(course => {
                     const option = document.createElement("option");
-                    option.value = course.url; // Full course URL
+                    option.value = course.number;
                     option.textContent = `${course.name} ${course.number}`;
                     courseDropdown.appendChild(option);
                 });
@@ -40,36 +57,56 @@
             }
         }
 
-        // Fetch courses that list the selected course as a prerequisite
-        async function fetchPrerequisiteForCourses() {
+        // Fetch courses that list the selected course as a prerequisite across all subjects
+        async function fetchAllPrerequisiteForCourses() {
             const courseDropdown = document.getElementById("courseDropdown");
             const selectedOption = courseDropdown.options[courseDropdown.selectedIndex];
-            const courseUrl = selectedOption.value;
-            const courseNumber = selectedOption.text.split(" ").pop(); // Extract course number
+            
+            // Extract course name and number from the dropdown text
+            const courseName = selectedOption.text.split(" ").slice(0, -1).join(" "); // E.g., "Computer Science"
+            const courseNumber = selectedOption.text.split(" ").pop(); // E.g., "331"
 
-            const response = await fetch(`/courses-with-prerequisite?url=${encodeURIComponent(courseUrl)}&number=${courseNumber}`);
-            const data = await response.json();
-
+            const loadingIndicator = document.getElementById("loadingIndicator");
             const resultList = document.getElementById("prerequisiteForList");
+
+            loadingIndicator.style.display = "block";
             resultList.innerHTML = ""; // Clear previous results
 
-            if (response.ok && data.courses) {
-                data.courses.forEach(course => {
-                    const listItem = document.createElement("li");
-                    listItem.textContent = `${course.name} ${course.number}`;
-                    resultList.appendChild(listItem);
-                });
-            } else {
-                resultList.innerHTML = `<li>${data.error || "No courses found that list this as a prerequisite."}</li>`;
+            try {
+                const response = await fetch(`/all-courses-with-prerequisite?name=${encodeURIComponent(courseName)}&number=${courseNumber}`);
+                const data = await response.json();
+
+                if (response.ok && data.courses) {
+                    if (data.courses.length === 0) {
+                        resultList.innerHTML = "<li>No courses found that list this as a prerequisite.</li>";
+                    } else {
+                        data.courses.forEach(course => {
+                            const listItem = document.createElement("div");
+                            listItem.className = "prerequisite-item";
+                            listItem.innerHTML = `
+                                <strong>${course.subject} ${course.number}</strong> - ${course.name}
+                                <div class="prereq-text">Prerequisites: ${course.prereq_text}</div>
+                            `;
+                            resultList.appendChild(listItem);
+                        });
+                    }
+                } else {
+                    resultList.innerHTML = `<li>${data.error || "An error occurred while searching for prerequisites."}</li>`;
+                }
+            } catch (error) {
+                resultList.innerHTML = `<li>Error: ${error.message}</li>`;
+            } finally {
+                loadingIndicator.style.display = "none";
             }
         }
+
 
         // Initialize subject dropdown on page load
         window.onload = fetchSubjects;
     </script>
 </head>
 <body>
-    <h1>Course Prerequisites</h1>
+    <h1>Course Prerequisites Search</h1>
 
     <label for="subjectDropdown">Select Course Code:</label>
     <select id="subjectDropdown" onchange="fetchCourses()">
@@ -79,11 +116,15 @@
     <br><br>
 
     <label for="courseDropdown">Select Course Number:</label>
-    <select id="courseDropdown" onchange="fetchPrerequisiteForCourses()">
+    <select id="courseDropdown" onchange="fetchAllPrerequisiteForCourses()">
         <option value="" disabled selected>Select a course number</option>
     </select>
 
-    <h3>Courses That List This as a Prerequisite:</h3>
-    <ul id="prerequisiteForList"></ul>
+    <div id="loadingIndicator" class="loading">
+        Searching across all subjects... This may take a few moments.
+    </div>
+
+    <h3>Courses that list this course as a prerequisite:</h3>
+    <div id="prerequisiteForList"></div>
 </body>
 </html>
