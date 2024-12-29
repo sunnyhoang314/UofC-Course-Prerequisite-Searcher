@@ -34,28 +34,42 @@ def get_subject_codes_and_links(base_url: str) -> Dict[str, str]:
     return subjects
 
 def get_courses_for_subject(subject_url: str) -> List[Dict]:
+    """
+    Scrape the courses from a subject page, including the full title.
+
+    Args:
+        subject_url (str): The URL of the subject page.
+
+    Returns:
+        List[Dict]: A list of courses with their name, number, full title, and URL.
+    """
     response = requests.get(subject_url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch data from {subject_url}. Status code: {response.status_code}")
 
     soup = BeautifulSoup(response.content, "html.parser")
     
-    # Find all span tags that have an id matching the pattern for course numbers
+    # Find all course numbers
     course_number_elements = soup.find_all("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCode'))
-
+    
     courses = []
 
-    # Loop through each course number element and retrieve the course number
     for course_number_span in course_number_elements:
         course_number = course_number_span.text.strip()
 
-        # Get the corresponding course name by finding a related element
+        # Find the course name
         course_name_span = course_number_span.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCourse'))
-        
-        if course_name_span:
+        course_name = course_name_span.text.strip() if course_name_span else None
+
+        # Find the full title (use find_next to look forward for the correct title)
+        course_title_span = course_number_span.find_next("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnTitle'))
+        course_title = course_title_span.text.strip() if course_title_span else None
+
+        if course_name and course_number:
             courses.append({
-                "name": course_name_span.text.strip(),
+                "name": course_name,
                 "number": course_number,
+                "title": course_title,
                 "url": f"{subject_url}#{course_number}"
             })
 
@@ -99,6 +113,7 @@ def search_prerequisites_in_subject(subject_url: str, target_course_name: str, t
                         # Find the associated course details
                         course_name_span = prereq_section.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCourse'))
                         course_number_span = prereq_section.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnCode'))
+                        course_title_span = prereq_section.find_previous("span", id=re.compile(r'ctl00_ctl00_pageContent_ctl\d{2}_ctl02_cnTitle'))
 
                         if course_name_span and course_number_span:
                             # Extract subject code from URL
@@ -108,6 +123,7 @@ def search_prerequisites_in_subject(subject_url: str, target_course_name: str, t
                                 "subject": subject_code,
                                 "name": course_name_span.text.strip(),
                                 "number": course_number_span.text.strip(),
+                                "title": course_title_span.text.strip() if course_title_span else "",
                                 "prereq_text": prereq_text.strip()
                             })
                         break  # Stop searching once a valid match is found

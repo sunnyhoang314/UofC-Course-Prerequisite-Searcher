@@ -26,8 +26,11 @@ async function fetchCourses() {
     if (response.ok) {
         data.forEach(course => {
             const option = document.createElement("option");
+            // Store the course name and number as data attributes
+            option.dataset.courseName = course.name;
+            option.dataset.courseNumber = course.number;
             option.value = course.number;
-            option.textContent = `${course.name} ${course.number}`;
+            option.textContent = `${course.name} ${course.number} - ${course.title || "No Title Available"}`;
             courseDropdown.appendChild(option);
         });
     } else {
@@ -40,9 +43,9 @@ async function fetchAllPrerequisiteForCourses() {
     const courseDropdown = document.getElementById("courseDropdown");
     const selectedOption = courseDropdown.options[courseDropdown.selectedIndex];
     
-    // Extract course name and number from the dropdown text
-    const courseName = selectedOption.text.split(" ").slice(0, -1).join(" "); // E.g., "Computer Science"
-    const courseNumber = selectedOption.text.split(" ").pop(); // E.g., "331"
+    // Get course name and number from data attributes instead of parsing the text
+    const courseName = selectedOption.dataset.courseName;
+    const courseNumber = selectedOption.dataset.courseNumber;
 
     const loadingIndicator = document.getElementById("loadingIndicator");
     const resultList = document.getElementById("prerequisiteForList");
@@ -62,7 +65,8 @@ async function fetchAllPrerequisiteForCourses() {
                     const listItem = document.createElement("div");
                     listItem.className = "prerequisite-item";
                     listItem.innerHTML = `
-                        <strong>${course.subject} ${course.number}</strong> - ${course.name}
+                        <strong>${course.subject} ${course.number}</strong>
+                        <div class="course-title">${course.title || ""}</div>
                         <div class="prereq-text">Prerequisites: ${course.prereq_text}</div>
                     `;
                     resultList.appendChild(listItem);
