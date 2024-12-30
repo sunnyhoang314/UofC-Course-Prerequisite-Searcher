@@ -38,3 +38,8 @@ This tool allows students at the University of Calgary to easily find courses th
     ```
 
 3. Open your browser and go to `http://localhost:5000` to access the course prerequisite search.
+
+## TODO
+
+1. Update to the most recent academic calendar regulations (2024 - 2025).
+2. Indicate whether or not this course is required for your major.
