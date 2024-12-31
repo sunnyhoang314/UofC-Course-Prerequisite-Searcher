@@ -12,7 +12,6 @@ This tool allows students at the University of Calgary to easily find courses th
 [![U of C Course Prerequiste Searcher demo
 ](https://img.youtube.com/vi/UUfNS0MHBkc/0.jpg)](https://www.youtube.com/watch?v=UUfNS0MHBkc)
 
-
 ## Installation
 
 1. Clone this repository:
