@@ -8,6 +8,9 @@ This tool allows students at the University of Calgary to easily find courses th
 - Displays courses that require a given course as a prerequisite.
 - Provides a simple search interface for easy use.
 
+## Video demonstration
+
+
 ## Installation
 
 1. Clone this repository:
